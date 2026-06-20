@@ -134,3 +134,4 @@ secure-commerce/
 - **Rate Limiting**: DRF throttling (20 req/min anon, 100/min user)
 - **Session Security**: JWT rotation + auto-expiry
 # E--commerce-Application
+# E--commerce-Application

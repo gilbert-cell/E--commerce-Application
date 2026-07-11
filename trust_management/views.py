@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from rest_framework import serializers, status
 from rest_framework.permissions import IsAuthenticated
 from .models import TrustedDevice, SecurityEvent
+from .utils import compute_trust_score, detect_fraud_flags
 from users.permissions import CanViewSecurityEvents
 
 
@@ -70,3 +71,19 @@ class TrustIndicatorsView(APIView):
             'jwt_protected': True,
             'trusted_devices_enabled': True,
         })
+
+
+class TrustScoreView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        result = compute_trust_score(request.user)
+        return Response(result)
+
+
+class FraudFlagsView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        flags = detect_fraud_flags(request.user)
+        return Response({'flags': flags, 'count': len(flags)})

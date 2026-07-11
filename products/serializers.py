@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from django.db.models import Avg, Count
 from .models import Product, Category, Review
 
 
@@ -31,10 +32,23 @@ class CategoryReferenceField(serializers.PrimaryKeyRelatedField):
 class ProductSerializer(serializers.ModelSerializer):
     category = CategoryReferenceField(queryset=Category.objects.all(), required=False, allow_null=True)
     category_name = serializers.CharField(source='category.name', read_only=True)
+    avg_rating = serializers.SerializerMethodField()
+    review_count = serializers.SerializerMethodField()
 
     class Meta:
         model = Product
-        fields = ('id', 'name', 'description', 'price', 'stock', 'image', 'category', 'category_name', 'is_active', 'created_at')
+        fields = (
+            'id', 'name', 'description', 'price', 'stock', 'image',
+            'category', 'category_name', 'is_active', 'created_at',
+            'avg_rating', 'review_count',
+        )
+
+    def get_avg_rating(self, obj):
+        result = obj.reviews.aggregate(avg=Avg('rating'))['avg']
+        return round(result, 1) if result else None
+
+    def get_review_count(self, obj):
+        return obj.reviews.count()
 
 
 class ReviewSerializer(serializers.ModelSerializer):
